@@ -65,10 +65,13 @@ def file_upload(request):
                 "message": "File uploaded successfully"
             }
     '''
-    file = request.FILES['file']
-    uploaded_file = UploadedFile(uploader=request.user)
-    uploaded_file.file.save(file.name, file, save=True)
-    return Response({'message': 'File uploaded successfully'})
+    try:
+        file = request.FILES['file']
+        uploaded_file = UploadedFile(uploader=request.user)
+        uploaded_file.file.save(file.name, file, save=True)
+        return Response({'message': 'File uploaded successfully'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])
@@ -101,6 +104,9 @@ def download_file(request, file_id):
         raise Http404()
 
     file_path = uploaded_file.file.name
-    response = FileResponse(open(file_path, 'rb'))
-    response['Content-Disposition'] = 'attachment; filename="' + os.path.basename(file_path) + '"'
-    return response
+    try:
+        response = FileResponse(open(file_path, 'rb'))
+        response['Content-Disposition'] = 'attachment; filename="' + os.path.basename(file_path) + '"'
+        return response
+    except Exception as e:
+        raise Http404()
